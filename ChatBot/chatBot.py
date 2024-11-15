@@ -20,7 +20,7 @@ def carrega_site():
   return documento
 
 def carrega_pdf():
-  caminho_pdf = '/content/drive/MyDrive/DadosCentral/Eduardo (APTIDÃO) protected.pdf'
+  caminho_pdf = 'pdf do colab.pdf'
   loader = PyPDFLoader(caminho_pdf)
   lista_documentos = loader = loader.load()
   documento = ''
