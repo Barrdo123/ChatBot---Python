@@ -4,4 +4,4 @@ Ele tem acesso a Vidios do Youtube por meio das legendas geradas
 
 Acesso a Sites por meio da URL
 
-Tem acesso a PDF (essa parte está em desenvolvimento, por enquanto funciona apenas no colab com pdf do proprio Drive do unsuario colocando o caminho no Codigo)
+Tem acesso a PDF (essa parte está em desenvolvimento, por enquanto funciona apenas no colab com pdf do proprio Drive do usuario colocando o caminho no Codigo)
