@@ -7,17 +7,17 @@ from langchain.document_loaders import PyPDFLoader
 
 app = Flask(__name__)
 
-api_key = 'chave da Api da Groq'
+api_key = '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'
 os.environ['GROQ_API_KEY'] = api_key
 
 chat = ChatGroq(model='llama-3.1-70b-versatile')
 
 menssagem = []
 documento = None
-documento_parts = []  # Lista para armazenar as partes do documento
+documento_parts = []
 
-MAX_TOKENS = 6000  # Limite de tokens por requisição
-MAX_CHUNK_SIZE = MAX_TOKENS - 1000  # Deixar um buffer de 1000 tokens para a parte da mensagem e o prompt
+MAX_TOKENS = 6000  
+MAX_CHUNK_SIZE = MAX_TOKENS - 1000 
 
 def dividir_documento(documento):
     """Divide o documento em partes menores com até 6.000 tokens."""
@@ -31,11 +31,11 @@ def dividir_documento(documento):
 
 def carregar_documento(opcao, entrada):
     global documento, documento_parts
-    if opcao == '1':  # Site
+    if opcao == '1': 
         loader = WebBaseLoader(entrada)
-    elif opcao == '2':  # PDF
+    elif opcao == '2':  
         loader = PyPDFLoader(entrada)
-    elif opcao == '3':  # YouTube
+    elif opcao == '3':  
         loader = YoutubeLoader.from_youtube_url(entrada, language=['pt'])
     else:
         return "Opção inválida!"
@@ -43,27 +43,40 @@ def carregar_documento(opcao, entrada):
     try:
         lista_documentos = loader.load()
         documento = ''.join(doc.page_content for doc in lista_documentos)
-        # Dividir o documento em partes menores, se necessário
+
         documento_parts = dividir_documento(documento)
+        
+
+        print(f"Documento dividido em {len(documento_parts)} partes.")
+        for i, parte in enumerate(documento_parts):
+            print(f"Parte {i+1} tem {len(parte)} caracteres.")
+        
         return "Documento carregado com sucesso!"
     except Exception as e:
         return f"Erro ao carregar documento: {e}"
 
 def resposta_bot(mensagem):
     global documento_parts
-    respostas = []
+    mensagens_modelo = [('system', 'Você tem acesso às partes do documento carregado.')]
     
-    # Enviar cada parte do documento separadamente para evitar exceder o limite de tokens
+
+    mensagens_modelo.extend(mensagem)
+
+
     for i, parte in enumerate(documento_parts):
-        mensagens_modelo = [('system', f"Você é amigável e se chama Barrdo, você tem acesso a essa parte dos dados para suas respostas: Parte {i+1}: {parte}")]
-        mensagens_modelo.extend(mensagem)
-        
-        template = ChatPromptTemplate.from_messages(mensagens_modelo)
-        chain = template | chat
-        resposta = chain.invoke({'documento': parte}).content
-        respostas.append(resposta)
+        print(f"Enviando a Parte {i+1} do documento para o modelo...")
+        mensagens_modelo.append(('system', f"Parte {i+1} do documento: {parte}"))
+
+    template = ChatPromptTemplate.from_messages(mensagens_modelo)
+    chain = template | chat
     
-    return ' '.join(respostas)
+    try:
+        resposta = chain.invoke({'documento': documento_parts}).content
+        print(f"Resposta gerada: {resposta}")
+        return resposta
+    except Exception as e:
+        print(f"Erro ao gerar resposta: {e}")
+        return f"Erro ao gerar resposta: {e}"
 
 @app.route('/')
 def index():
@@ -74,7 +87,7 @@ def send():
     global menssagem
     user_input = request.form['user_input']
     if user_input.lower() == 'x':
-        menssagem = []  # Reset the conversation
+        menssagem = [] 
         return {"response": "Foi um prazer, obrigado por usar o BarrdoBot!"}
     
     menssagem.append(('user', user_input))
