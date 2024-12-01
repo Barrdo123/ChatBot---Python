@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BarrdoBot</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Bem-vindo ao BarrdoBot</h1>
+        <div class="document-upload">
+            <h2>Carregar Documento</h2>
+            <form id="upload-form">
+                <select id="option" name="option">
+                    <option value="1">Site</option>
+                    <option value="2">PDF</option>
+                    <option value="3">YouTube</option>
+                </select>
+                <input type="text" id="input" name="input" placeholder="Digite o URL ou caminho do arquivo">
+                <button type="submit">Carregar</button>
+            </form>
+            <p id="upload-response"></p>
+        </div>
+        <div class="chat">
+            <h2>Converse com BarrdoBot</h2>
+            <div id="chat-box"></div>
+            <form id="chat-form">
+                <input type="text" id="user-input" name="user_input" placeholder="Digite sua mensagem">
+                <button type="submit">Enviar</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        const chatForm = document.getElementById('chat-form');
+        const chatBox = document.getElementById('chat-box');
+        const uploadForm = document.getElementById('upload-form');
+        const uploadResponse = document.getElementById('upload-response');
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(uploadForm);
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            uploadResponse.textContent = result.response;
+        });
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userInput = document.getElementById('user-input').value;
+            const response = await fetch('/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `user_input=${encodeURIComponent(userInput)}`
+            });
+            const result = await response.json();
+            chatBox.innerHTML += `<div class="user">Você: ${userInput}</div>`;
+            chatBox.innerHTML += `<div class="bot">Barrdo: ${result.response}</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+            document.getElementById('user-input').value = '';
+        }); 
+    </script>
+</body>
+</html>
